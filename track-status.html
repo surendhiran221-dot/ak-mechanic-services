@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Status | AK MECHANIC SERVICES</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">AK MECHANIC SERVICES</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="book-service.html">Book Service</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="track-status.html">Track Status</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger fw-bold" href="admin/login.php"><i
+                                class="fas fa-user-shield me-1"></i> Admin</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="form-container">
+                        <h2 class="text-center mb-4 fw-bold">Track Your Bike Status</h2>
+                        <p class="text-center text-muted mb-4">Enter your mobile number to check the current status of
+                            your booking.</p>
+
+                        <form id="trackForm">
+                            <div class="input-group mb-3">
+                                <input type="tel" class="form-control form-control-lg" id="trackPhone"
+                                    placeholder="Enter Mobile Number" required>
+                                <button class="btn btn-primary px-4" type="submit">Track now</button>
+                            </div>
+                        </form>
+
+                        <div id="statusResult" class="mt-5 d-none">
+                            <hr>
+                            <h4 class="fw-bold mb-3">Booking Details</h4>
+                            <div class="card border-0 shadow-sm p-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><strong>Customer Name:</strong></span>
+                                    <span id="resName"></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><strong>Bike Model:</strong></span>
+                                    <span id="resModel"></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span><strong>Problem:</strong></span>
+                                    <span id="resProblem"></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                    <span><strong>Service Date:</strong></span>
+                                    <span id="resDate"></span>
+                                </div>
+                                <div class="text-center py-3">
+                                    <h5 class="fw-bold">Current Status</h5>
+                                    <div id="statusBadge" class="badge p-3 fs-6"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="noResult" class="mt-4 text-center d-none alert alert-warning">
+                            No booking found with this mobile number.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Buttons -->
+    <a href="https://wa.me/916383958270" class="floating-btn" id="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    <a href="tel:6383958270" class="floating-btn" id="call-float">
+        <i class="fas fa-phone"></i>
+    </a>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 AK MECHANIC SERVICES.</p>
+            <div class="mt-2">
+                <a href="admin/login.php" class="text-white-50 text-decoration-none small"><i
+                        class="fas fa-lock me-1"></i> Admin Login</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('trackForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const phone = document.getElementById('trackPhone').value;
+            const statusResult = document.getElementById('statusResult');
+            const noResult = document.getElementById('noResult');
+
+            fetch(`api/get_booking_status.php?phone=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusResult.classList.remove('d-none');
+                        noResult.classList.add('d-none');
+
+                        document.getElementById('resName').textContent = data.booking.customer_name;
+                        document.getElementById('resModel').textContent = data.booking.bike_model;
+                        document.getElementById('resProblem').textContent = data.booking.problem;
+                        document.getElementById('resDate').textContent = data.booking.service_date;
+
+                        const badge = document.getElementById('statusBadge');
+                        badge.textContent = data.booking.status;
+                        badge.className = 'badge p-3 fs-6 ';
+
+                        if (data.booking.status === 'Pending') {
+                            badge.classList.add('bg-warning', 'text-dark');
+                        } else if (data.booking.status === 'In Progress') {
+                            badge.classList.add('bg-info', 'text-white');
+                        } else if (data.booking.status === 'Completed') {
+                            badge.classList.add('bg-success', 'text-white');
+                        }
+                    } else {
+                        statusResult.classList.add('d-none');
+                        noResult.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        });
+    </script>
+</body>
+
+</html>
